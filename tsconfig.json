@@ -1,0 +1,3 @@
+{
+  "extends": "@neighborhood-incident-report/config/tsconfig.base.json"
+}

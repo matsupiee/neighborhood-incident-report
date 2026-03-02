@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "scheme": "neighborhood-incident-report",
+    "userInterfaceStyle": "automatic",
+    "orientation": "default",
+    "web": {
+      "bundler": "metro"
+    },
+    "name": "neighborhood-incident-report",
+    "slug": "neighborhood-incident-report",
+    "plugins": ["expo-font"],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

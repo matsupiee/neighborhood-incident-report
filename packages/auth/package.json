@@ -1,0 +1,25 @@
+{
+  "name": "@neighborhood-incident-report/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@better-auth/expo": "catalog:",
+    "@neighborhood-incident-report/db": "workspace:*",
+    "@neighborhood-incident-report/env": "workspace:*",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@neighborhood-incident-report/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
