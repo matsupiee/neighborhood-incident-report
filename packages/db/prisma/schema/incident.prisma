@@ -1,0 +1,88 @@
+model IncidentCategory {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  name                  String
+  incidentCategoryPosts IncidentCategoryPost[]
+
+  @@map("incident_category")
+}
+
+model IncidentCategoryPost {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  incidentCategoryId String
+  postId             String
+
+  incidentCategory IncidentCategory @relation(fields: [incidentCategoryId], references: [id], onDelete: Cascade)
+  post             Post             @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("incident_category_post")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  meshCode    String
+  description String         @db.VarChar(200)
+  imageUrl    String?
+  timeRange   TimeRange
+  status      IncidentStatus @default(PENDING)
+  publishedAt DateTime?
+  userId      String
+
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  abuseReports          AbuseReport[]
+  incidentCategoryPosts IncidentCategoryPost[]
+
+  @@index([status, publishedAt])
+  @@index([userId])
+  @@map("incident")
+}
+
+// 細かい時間をぼかすために定義する
+enum TimeRange {
+  MIDNIGHT // 0:00〜6:00
+  MORNING // 6:00〜10:00
+  DAYTIME // 10:00〜16:00
+  EVENING // 16:00〜20:00
+  NIGHT_EARLY // 20:00〜22:00
+  NIGHT_LATE // 22:00〜24:00
+}
+
+// 
+enum IncidentStatus {
+  PENDING
+  PUBLISHED
+  HIDDEN
+}
+
+// 通報理由
+enum AbuseReportReason {
+  PERSONAL_INFO // 個人情報が含まれる
+  FALSE_REPORT // 虚偽・誇張の通報
+  HARASSMENT // 嫌がらせ目的
+  OTHER
+}
+
+// 不適切な報告を通報する
+model AbuseReport {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  postId String
+  userId String
+  reason AbuseReportReason
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("abuse_report")
+}
