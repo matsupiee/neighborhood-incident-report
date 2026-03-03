@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
-import { ScrollView, Text, View, Pressable } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { Text, View, Pressable } from "react-native";
 
 import { Container } from "@/components/container";
 import { SignUp } from "@/components/sign-up";
@@ -9,7 +10,7 @@ export default function SignUpScreen() {
 
   return (
     <Container>
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
@@ -34,7 +35,7 @@ export default function SignUpScreen() {
             </Text>
           </Pressable>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </Container>
   );
 }

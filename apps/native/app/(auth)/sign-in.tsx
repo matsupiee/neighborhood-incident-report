@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ScrollView } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { Text, View, Pressable } from "react-native";
 
 import { Container } from "@/components/container";
@@ -10,7 +10,7 @@ export default function SignInScreen() {
 
   return (
     <Container>
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
@@ -35,7 +35,7 @@ export default function SignInScreen() {
             </Text>
           </Pressable>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </Container>
   );
 }
