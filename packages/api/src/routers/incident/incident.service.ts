@@ -1,6 +1,7 @@
 import prisma from "@neighborhood-incident-report/db";
 import { ORPCError } from "@orpc/server";
 
+import { aggregateHeatmap } from "../../lib/heatmap/aggregate";
 import { toMeshCode } from "../../lib/mesh/convert";
 import { filterText } from "../../lib/moderation/text-filter";
 import { calculateTrustScore, isHighTrust } from "../../lib/trust/scoring";
@@ -11,9 +12,6 @@ import type {
   IncidentListInput,
   IncidentReportAbuseInput,
 } from "./_schemas";
-
-// ヒートマップのキャッシュ遅延（6時間）
-const HEATMAP_DELAY_MS = 6 * 60 * 60 * 1000;
 
 // 通報3件で自動非表示
 const ABUSE_AUTO_HIDE_THRESHOLD = 3;
@@ -109,28 +107,10 @@ export async function listIncidents(input: IncidentListInput) {
 }
 
 export async function getHeatmap(input: IncidentHeatmapInput) {
-  // 最低6時間前に公開されたデータのみ集計
-  const cutoff = new Date(Date.now() - HEATMAP_DELAY_MS);
-  const sinceDate = input.since ? new Date(input.since) : undefined;
-
-  const grouped = await prisma.post.groupBy({
-    by: ["meshCode"],
-    where: {
-      status: "PUBLISHED",
-      publishedAt: {
-        lte: cutoff,
-        ...(sinceDate && { gte: sinceDate }),
-      },
-    },
-    _count: { meshCode: true },
+  return await aggregateHeatmap({
+    since: input.since,
+    categoryId: input.categoryId,
   });
-
-  return grouped.map(
-    (row: { meshCode: string; _count: { meshCode: number } }) => ({
-      meshCode: row.meshCode,
-      count: row._count.meshCode,
-    }),
-  );
 }
 
 export async function listCategories() {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { toMeshCode } from "../../lib/mesh/convert";
+import { meshCodeToCenter, toMeshCode } from "../../lib/mesh/convert";
 
 describe("toMeshCode", () => {
   it("渋谷区座標を正しいメッシュコードに変換する", () => {
@@ -85,5 +85,38 @@ describe("toMeshCode", () => {
     const code = toMeshCode(45.5211, 141.9355);
     expect(code).toHaveLength(8);
     expect(/^\d{8}$/.test(code)).toBe(true);
+  });
+});
+
+describe("meshCodeToCenter", () => {
+  it("メッシュコードから中心座標を正しく返す（渋谷区）", () => {
+    // toMeshCode(35.6762, 139.6503) = "53394512"
+    const { lat, lng } = meshCodeToCenter("53394512");
+    // 中心座標はセルの中にある（±約0.005度 = 約500m）
+    expect(lat).toBeGreaterThan(35.67);
+    expect(lat).toBeLessThan(35.68);
+    expect(lng).toBeGreaterThan(139.64);
+    expect(lng).toBeLessThan(139.66);
+  });
+
+  it("toMeshCode → meshCodeToCenter が元のメッシュに戻る（ラウンドトリップ）", () => {
+    const inputLat = 35.6762;
+    const inputLng = 139.6503;
+    const code = toMeshCode(inputLat, inputLng);
+    const { lat, lng } = meshCodeToCenter(code);
+    // 中心座標を再度メッシュ変換したコードは元のコードと一致する
+    expect(toMeshCode(lat, lng)).toBe(code);
+  });
+
+  it("東京駅座標のラウンドトリップ", () => {
+    const code = toMeshCode(35.6812, 139.7671);
+    const { lat, lng } = meshCodeToCenter(code);
+    expect(toMeshCode(lat, lng)).toBe(code);
+  });
+
+  it("大阪座標のラウンドトリップ", () => {
+    const code = toMeshCode(34.6937, 135.5023);
+    const { lat, lng } = meshCodeToCenter(code);
+    expect(toMeshCode(lat, lng)).toBe(code);
   });
 });

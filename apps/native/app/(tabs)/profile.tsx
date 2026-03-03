@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { ScrollView, Text, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -14,7 +15,13 @@ type MenuItemProps = {
   isDestructive?: boolean;
 };
 
-function MenuItem({ icon, label, value, onPress, isDestructive }: MenuItemProps) {
+function MenuItem({
+  icon,
+  label,
+  value,
+  onPress,
+  isDestructive,
+}: MenuItemProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -45,6 +52,7 @@ function MenuItem({ icon, label, value, onPress, isDestructive }: MenuItemProps)
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { data: session } = authClient.useSession();
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
   const isConnected = healthCheck?.data === "OK";
@@ -73,7 +81,9 @@ export default function ProfileScreen() {
         <View className="p-5 flex-row items-center">
           {/* Avatar */}
           <View className="w-16 h-16 rounded-full bg-[#1a73e8] items-center justify-center mr-4 shadow-md">
-            <Text className="text-2xl font-bold text-white">{userInitials}</Text>
+            <Text className="text-2xl font-bold text-white">
+              {userInitials}
+            </Text>
           </View>
           <View className="flex-1">
             <Text className="text-lg font-semibold text-gray-800">
@@ -100,7 +110,9 @@ export default function ProfileScreen() {
                 borderRightColor: "#f3f4f6",
               }}
             >
-              <Text className="text-xl font-bold text-gray-800">{stat.value}</Text>
+              <Text className="text-xl font-bold text-gray-800">
+                {stat.value}
+              </Text>
               <Text className="text-xs text-gray-400 mt-0.5">{stat.label}</Text>
             </View>
           ))}
@@ -143,8 +155,26 @@ export default function ProfileScreen() {
         <View className="h-px bg-gray-100 ml-16" />
         <MenuItem icon="document-text-outline" label="利用規約" />
         <View className="h-px bg-gray-100 ml-16" />
-        <MenuItem icon="information-circle-outline" label="バージョン" value="1.0.0" />
+        <MenuItem
+          icon="information-circle-outline"
+          label="バージョン"
+          value="1.0.0"
+        />
       </View>
+
+      {/* Moderator Section */}
+      {session?.user ? (
+        <View className="mx-4 mt-4 bg-white rounded-2xl overflow-hidden shadow-sm">
+          <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 pt-4 pb-2">
+            管理者
+          </Text>
+          <MenuItem
+            icon="shield-outline"
+            label="モデレーションキュー"
+            onPress={() => router.push("/screens/moderation-queue")}
+          />
+        </View>
+      ) : null}
 
       {/* Sign out */}
       {session?.user ? (

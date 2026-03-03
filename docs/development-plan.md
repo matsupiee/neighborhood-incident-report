@@ -25,8 +25,8 @@
 | Phase 1  | バックエンドコア（インシデント管理） | ✅ 完了   |
 | Phase 2  | バックエンド モデレーション          | ✅ 完了   |
 | Phase 3  | ネイティブアプリ コアスクリーン      | ✅ 完了   |
-| Phase 4  | ヒートマップ可視化                   | 🔲 未着手 |
-| Phase 5  | モデレーター管理 UI                  | 🔲 未着手 |
+| Phase 4  | ヒートマップ可視化                   | ✅ 完了   |
+| Phase 5  | モデレーター管理 UI                  | ✅ 完了   |
 | Phase 6  | テスト・堅牢化                       | 🔲 未着手 |
 
 ---
@@ -45,38 +45,38 @@
 
 ## Phase 1：バックエンドコア ✅
 
-| タスク                         | 作成ファイル                                     | 状態 |
-| ------------------------------ | ------------------------------------------------ | ---- |
-| 1-1 メッシュコード変換         | `packages/api/src/lib/mesh/convert.ts`           | ✅   |
-| 1-2 NGワード・個人情報フィルタ | `packages/api/src/lib/moderation/text-filter.ts` | ✅   |
-| 1-3 レートリミット（1日5件）   | `packages/api/src/middleware/rate-limit.ts`      | ✅   |
-| 1-4 `incident.create`          | `packages/api/src/routers/incident/incident.router.ts`  | ✅   |
-| 1-5 `incident.list`            | 同上                                                    | ✅   |
-| 1-6 `incident.getHeatmap`      | 同上                                                    | ✅   |
+| タスク                          | 作成ファイル                                           | 状態 |
+| ------------------------------- | ------------------------------------------------------ | ---- |
+| 1-1 メッシュコード変換          | `packages/api/src/lib/mesh/convert.ts`                 | ✅   |
+| 1-2 NG ワード・個人情報フィルタ | `packages/api/src/lib/moderation/text-filter.ts`       | ✅   |
+| 1-3 レートリミット（1 日 5 件） | `packages/api/src/middleware/rate-limit.ts`            | ✅   |
+| 1-4 `incident.create`           | `packages/api/src/routers/incident/incident.router.ts` | ✅   |
+| 1-5 `incident.list`             | 同上                                                   | ✅   |
+| 1-6 `incident.getHeatmap`       | 同上                                                   | ✅   |
 
 **実装済みの主要仕様：**
 
-- 緯度経度 → JIS X 0410 3次メッシュコード（8桁、約1km精度）に変換、生座標は即時破棄
-- NGワード検出（8種）＋個人情報パターン検出（電話番号・メール・番地）
-- 1ユーザーあたり1日5件までのレートリミット
+- 緯度経度 → JIS X 0410 3 次メッシュコード（8 桁、約 1km 精度）に変換、生座標は即時破棄
+- NG ワード検出（8 種）＋個人情報パターン検出（電話番号・メール・番地）
+- 1 ユーザーあたり 1 日 5 件までのレートリミット
 - `incident.create`：認証必須、メッシュ変換・フィルタ・レートリミット適用後に `PENDING` で保存
 - `incident.list`：公開済み（`PUBLISHED`）のみ返す、cursor ページネーション、プライバシー配慮フィールドのみ返却
-- `incident.getHeatmap`：6時間遅延保証、メッシュコード単位の集計
-- `incident.reportAbuse`：通報3件で `status: HIDDEN` 自動変更
+- `incident.getHeatmap`：6 時間遅延保証、メッシュコード単位の集計
+- `incident.reportAbuse`：通報 3 件で `status: HIDDEN` 自動変更
 
-**テスト：** 20テスト全パス（mesh: 8件、text-filter: 12件）
+**テスト：** 20 テスト全パス（mesh: 8 件、text-filter: 12 件）
 
 ---
 
 ## Phase 2：バックエンド モデレーション ✅
 
-| タスク                                                     | 作成ファイル                             | 優先度 |
-| ---------------------------------------------------------- | ---------------------------------------- | ------ |
-| 2-1 画像処理パイプライン（顔・ナンバーモザイク、EXIF除去） | `packages/api/src/lib/image/process.ts`  | 高     |
-| 2-2 トラストスコア計算                                     | `packages/api/src/lib/trust/scoring.ts`  | 高     |
-| 2-3 `moderation.listPending`（モデレーター限定）           | `packages/api/src/routers/moderation/moderation.router.ts` | 高     |
-| 2-4 `moderation.approve` / `moderation.reject`             | 同上                                                       | 高     |
-| 2-5 `incident.reportAbuse` の拡充                          | `packages/api/src/routers/incident/incident.router.ts`     | 中     |
+| タスク                                                      | 作成ファイル                                               | 優先度 |
+| ----------------------------------------------------------- | ---------------------------------------------------------- | ------ |
+| 2-1 画像処理パイプライン（顔・ナンバーモザイク、EXIF 除去） | `packages/api/src/lib/image/process.ts`                    | 高     |
+| 2-2 トラストスコア計算                                      | `packages/api/src/lib/trust/scoring.ts`                    | 高     |
+| 2-3 `moderation.listPending`（モデレーター限定）            | `packages/api/src/routers/moderation/moderation.router.ts` | 高     |
+| 2-4 `moderation.approve` / `moderation.reject`              | 同上                                                       | 高     |
+| 2-5 `incident.reportAbuse` の拡充                           | `packages/api/src/routers/incident/incident.router.ts`     | 中     |
 
 **自動制御フロー：**
 
@@ -110,7 +110,7 @@
 
 ---
 
-## Phase 4：ヒートマップ可視化 🔲
+## Phase 4：ヒートマップ可視化 ✅
 
 | タスク                               | 作成ファイル                                | 優先度 |
 | ------------------------------------ | ------------------------------------------- | ------ |
@@ -120,17 +120,17 @@
 
 **非リアルタイム保証：**
 
-- API: キャッシュ制御ヘッダで最低6時間遅延
+- API: キャッシュ制御ヘッダで最低 6 時間遅延
 - クライアント: TanStack Query の `staleTime: 6 * 60 * 60 * 1000`
 
 ---
 
-## Phase 5：モデレーター管理 UI 🔲
+## Phase 5：モデレーター管理 UI ✅
 
-| タスク                                     | 作成ファイル                                       | 優先度 |
-| ------------------------------------------ | -------------------------------------------------- | ------ |
-| 5-1 モデレーター権限ミドルウェア           | `packages/api/src/middleware/require-moderator.ts` | 中     |
-| 5-2 モデレーションキュー画面               | `apps/native/screens/moderation-queue.tsx`         | 中     |
+| タスク                                     | 作成ファイル                                               | 優先度 |
+| ------------------------------------------ | ---------------------------------------------------------- | ------ |
+| 5-1 モデレーター権限ミドルウェア           | `packages/api/src/middleware/require-moderator.ts`         | 中     |
+| 5-2 モデレーションキュー画面               | `apps/native/screens/moderation-queue.tsx`                 | 中     |
 | 5-3 UserRestriction 登録・解除プロシージャ | `packages/api/src/routers/moderation/moderation.router.ts` | 中     |
 
 ---

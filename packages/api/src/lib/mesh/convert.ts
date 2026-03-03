@@ -27,3 +27,26 @@ export function toMeshCode(lat: number, lng: number): string {
 
   return `${p}${u}${q}${v}${r}${w}`;
 }
+
+/**
+ * 3次メッシュコード（8桁）からメッシュセルの中心座標（緯度経度）を返す。
+ *
+ * toMeshCode の逆変換。マップ上にヒートマップを描画する際に使用する。
+ */
+export function meshCodeToCenter(meshCode: string): {
+  lat: number;
+  lng: number;
+} {
+  const p = parseInt(meshCode.slice(0, 2), 10);
+  const u = parseInt(meshCode.slice(2, 4), 10);
+  const q = parseInt(meshCode.slice(4, 5), 10);
+  const v = parseInt(meshCode.slice(5, 6), 10);
+  const r = parseInt(meshCode.slice(6, 7), 10);
+  const w = parseInt(meshCode.slice(7, 8), 10);
+
+  // 各メッシュ区画の中心を計算（+0.5 で区画の中心に）
+  const lat = (p + (q + (r + 0.5) / 10) / 8) / 1.5;
+  const lng = u + 100 + (v + (w + 0.5) / 10) / 8;
+
+  return { lat, lng };
+}

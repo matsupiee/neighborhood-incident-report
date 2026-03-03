@@ -19,6 +19,8 @@ export async function listPendingPosts() {
       description: true,
       timeRange: true,
       createdAt: true,
+      // モデレーター専用: BAN操作のためにuserIdを返す
+      userId: true,
       incidentCategoryPosts: {
         select: {
           incidentCategory: {
@@ -97,10 +99,63 @@ export async function rejectPost(input: { postId: string }) {
 }
 
 /**
- * ユーザーをBANする（Phase 5-3で実装）。
+ * ユーザーをBANする。
+ * UserRestriction レコードを作成し、対象ユーザーの全PENDINGおよびPUBLISHED投稿をHIDDENに変更する。
  *
- * @throws Error - 未実装機能
+ * @param input - BAN対象のユーザーIDと理由
+ * @throws ORPCError("NOT_FOUND") - ユーザーが見つからない場合
  */
-export async function banUser() {
-  throw new Error("banUser is not implemented yet (Phase 5-3)");
+export async function banUser(input: { userId: string; reason: string }) {
+  const user = await prisma.user.findUnique({
+    where: { id: input.userId },
+    select: { id: true },
+  });
+
+  if (!user) {
+    throw new ORPCError("NOT_FOUND", { message: "ユーザーが見つかりません" });
+  }
+
+  await prisma.$transaction([
+    prisma.userRestriction.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: input.userId,
+        reason: input.reason,
+        restrictedAt: new Date(),
+      },
+    }),
+    prisma.post.updateMany({
+      where: {
+        userId: input.userId,
+        status: { in: ["PENDING", "PUBLISHED"] },
+      },
+      data: { status: "HIDDEN" },
+    }),
+  ]);
+
+  return { banned: true };
+}
+
+/**
+ * ユーザーのBANを解除する。
+ * 対象ユーザーのすべての UserRestriction レコードを削除する。
+ *
+ * @param input - BAN解除対象のユーザーID
+ * @throws ORPCError("NOT_FOUND") - ユーザーが見つからない場合
+ */
+export async function unbanUser(input: { userId: string }) {
+  const user = await prisma.user.findUnique({
+    where: { id: input.userId },
+    select: { id: true },
+  });
+
+  if (!user) {
+    throw new ORPCError("NOT_FOUND", { message: "ユーザーが見つかりません" });
+  }
+
+  await prisma.userRestriction.deleteMany({
+    where: { userId: input.userId },
+  });
+
+  return { unbanned: true };
 }
