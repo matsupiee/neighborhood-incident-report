@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/matsukiyohiromu/src/github.com/matsupiee/neighborhood-incident-report && bun run check"
+          }
+        ]
+      }
+    ]
+  }
+}
