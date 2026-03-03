@@ -25,7 +25,7 @@ function AuthRedirect() {
     if (!session?.user && !inAuthGroup) {
       router.replace("/(auth)/sign-in");
     } else if (session?.user && inAuthGroup) {
-      router.replace("/(drawer)");
+      router.replace("/(tabs)/map");
     }
   }, [session?.user, isPending]);
 
@@ -38,8 +38,19 @@ function StackLayout() {
       <AuthRedirect />
       <Stack screenOptions={{}}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ title: "Modal", presentation: "modal" }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="modal"
+          options={{ title: "Modal", presentation: "modal" }}
+        />
+        <Stack.Screen
+          name="screens/post-incident"
+          options={{
+            title: "インシデント投稿",
+            presentation: "modal",
+            headerShown: false,
+          }}
+        />
       </Stack>
     </>
   );

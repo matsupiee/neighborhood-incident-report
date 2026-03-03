@@ -5,10 +5,12 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "dev": "expo start --clear",
+    "dev": "expo start --go --clear",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
+    "dev:ios": "expo prebuild --clean && expo run:ios",
+    "dev:android": "expo prebuild --clean && expo run:android",
     "web": "expo start --web"
   },
   "dependencies": {

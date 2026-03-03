@@ -8,6 +8,12 @@
     },
     "name": "neighborhood-incident-report",
     "slug": "neighborhood-incident-report",
+    "ios": {
+      "bundleIdentifier": "com.matsupiee.neighborhoodincidentreport"
+    },
+    "android": {
+      "package": "com.matsupiee.neighborhoodincidentreport"
+    },
     "plugins": ["expo-font", "expo-dev-client", "expo-location"],
     "experiments": {
       "typedRoutes": true,

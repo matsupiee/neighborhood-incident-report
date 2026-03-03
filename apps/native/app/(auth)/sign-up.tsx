@@ -28,11 +28,11 @@ export default function SignUpScreen() {
         <SignUp />
 
         <View className="flex-row justify-center mt-6">
-          <Text className="text-sm text-muted">すでにアカウントをお持ちの方は </Text>
+          <Text className="text-sm text-muted">
+            すでにアカウントをお持ちの方は{" "}
+          </Text>
           <Pressable onPress={() => router.push("/(auth)/sign-in")}>
-            <Text className="text-sm text-primary font-semibold">
-              ログイン
-            </Text>
+            <Text className="text-sm text-primary font-semibold">ログイン</Text>
           </Pressable>
         </View>
       </KeyboardAwareScrollView>
