@@ -3,6 +3,7 @@ import { ORPCError } from "@orpc/server";
 
 import { toMeshCode } from "../../lib/mesh/convert";
 import { filterText } from "../../lib/moderation/text-filter";
+import { calculateTrustScore, isHighTrust } from "../../lib/trust/scoring";
 import { checkPostRateLimit } from "../../middleware/rate-limit";
 import type {
   IncidentCreateInput,
@@ -17,7 +18,10 @@ const HEATMAP_DELAY_MS = 6 * 60 * 60 * 1000;
 // 通報3件で自動非表示
 const ABUSE_AUTO_HIDE_THRESHOLD = 3;
 
-export async function createIncident(input: IncidentCreateInput, userId: string) {
+export async function createIncident(
+  input: IncidentCreateInput,
+  userId: string,
+) {
   // 1. レートリミット確認（1日5件）
   await checkPostRateLimit(userId);
 
@@ -30,7 +34,15 @@ export async function createIncident(input: IncidentCreateInput, userId: string)
     throw new ORPCError("BAD_REQUEST", { message: filterResult.reason });
   }
 
-  // 4. Post を PENDING で作成
+  // 4. トラストスコアを計算
+  const trustScore = await calculateTrustScore(userId);
+
+  // 5. trustScore >= 80 の場合は6時間後に自動公開予定、< 80 ならモデレーター確認待ち
+  const publishedAt = isHighTrust(trustScore)
+    ? new Date(Date.now() + 6 * 60 * 60 * 1000)
+    : null;
+
+  // 6. Post を作成
   return await prisma.post.create({
     data: {
       meshCode,
@@ -38,6 +50,7 @@ export async function createIncident(input: IncidentCreateInput, userId: string)
       timeRange: input.timeRange,
       imageUrl: input.imageUrl,
       status: "PENDING",
+      publishedAt,
       userId,
       incidentCategoryPosts: {
         create: input.categoryIds.map((categoryId) => ({
@@ -112,13 +125,25 @@ export async function getHeatmap(input: IncidentHeatmapInput) {
     _count: { meshCode: true },
   });
 
-  return grouped.map((row: { meshCode: string; _count: { meshCode: number } }) => ({
-    meshCode: row.meshCode,
-    count: row._count.meshCode,
-  }));
+  return grouped.map(
+    (row: { meshCode: string; _count: { meshCode: number } }) => ({
+      meshCode: row.meshCode,
+      count: row._count.meshCode,
+    }),
+  );
 }
 
-export async function reportAbuse(input: IncidentReportAbuseInput, userId: string) {
+export async function listCategories() {
+  return await prisma.incidentCategory.findMany({
+    orderBy: { name: "asc" },
+    select: { id: true, name: true },
+  });
+}
+
+export async function reportAbuse(
+  input: IncidentReportAbuseInput,
+  userId: string,
+) {
   // 投稿の存在確認
   const post = await prisma.post.findUnique({
     where: { id: input.postId },
@@ -130,7 +155,9 @@ export async function reportAbuse(input: IncidentReportAbuseInput, userId: strin
   }
 
   if (post.status === "HIDDEN") {
-    throw new ORPCError("BAD_REQUEST", { message: "この投稿はすでに非表示です" });
+    throw new ORPCError("BAD_REQUEST", {
+      message: "この投稿はすでに非表示です",
+    });
   }
 
   // AbuseReport を作成（同一ユーザーは1投稿につき1回のみ）

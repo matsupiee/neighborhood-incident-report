@@ -1,6 +1,7 @@
 import { ORPCError, os } from "@orpc/server";
 
 import type { Context } from "./context";
+import { requireModerator as checkModerator } from "./middleware/require-moderator";
 
 export const o = os.$context<Context>();
 
@@ -18,3 +19,10 @@ const requireAuth = o.middleware(async ({ context, next }) => {
 });
 
 export const protectedProcedure = publicProcedure.use(requireAuth);
+
+const requireModerator = o.middleware(async ({ context, next }) => {
+  await checkModerator(context);
+  return next();
+});
+
+export const moderatorProcedure = protectedProcedure.use(requireModerator);

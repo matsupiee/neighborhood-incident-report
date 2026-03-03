@@ -15,7 +15,13 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "interactive": true
+    },
+    "dev:native": {
+      "cache": false,
+      "persistent": true,
+      "interactive": true
     },
     "db:push": {
       "cache": false
@@ -30,6 +36,9 @@
     "db:studio": {
       "cache": false,
       "persistent": true
+    },
+    "db:seed": {
+      "cache": false
     }
   }
 }

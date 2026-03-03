@@ -13,11 +13,17 @@ export const auth = betterAuth({
     env.CORS_ORIGIN,
     "neighborhood-incident-report://",
     ...(env.NODE_ENV === "development"
-      ? ["exp://", "exp://**", "exp://192.168.*.*:*/**", "http://localhost:8081"]
+      ? [
+          "exp://",
+          "exp://**",
+          "exp://192.168.*.*:*/**",
+          "http://localhost:8081",
+        ]
       : []),
   ],
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: false, // TODO: 本番環境では true にしたい
   },
   advanced: {
     defaultCookieAttributes: {
