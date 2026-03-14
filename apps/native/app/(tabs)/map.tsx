@@ -63,8 +63,7 @@ export default function MapScreen() {
   const shadowOpacity = useRef(new Animated.Value(0.25)).current;
 
   // sinceをfilters.periodMsから計算（リクエスト時に現在時刻基準で計算）
-  const since =
-    filters.periodMs !== undefined ? Date.now() - filters.periodMs : undefined;
+  const since = filters.periodMs !== undefined ? Date.now() - filters.periodMs : undefined;
 
   const { data: heatmapData } = useQuery({
     ...orpc.incident.getHeatmap.queryOptions({
@@ -111,7 +110,7 @@ export default function MapScreen() {
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         },
-        600
+        600,
       );
     }
   };
@@ -125,7 +124,7 @@ export default function MapScreen() {
           latitudeDelta: 0.02,
           longitudeDelta: 0.02,
         },
-        400
+        400,
       );
     }
   };
@@ -140,7 +139,7 @@ export default function MapScreen() {
 
     try {
       const gsiUrl = `https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(
-        query
+        query,
       )}`;
       const res = await fetch(gsiUrl);
       const gsiResults = res.ok ? await res.json() : [];
@@ -156,7 +155,7 @@ export default function MapScreen() {
           latitudeDelta: 0.02,
           longitudeDelta: 0.02,
         },
-        500
+        500,
       );
     } catch {
       setSearchError("検索中にエラーが発生しました");
@@ -279,24 +278,16 @@ export default function MapScreen() {
   }
 
   const center = location ?? TOKYO_COORDINATES;
-  const maxCount =
-    heatmapData?.reduce((max, cell) => Math.max(max, cell.count), 1) ?? 1;
+  const maxCount = heatmapData?.reduce((max, cell) => Math.max(max, cell.count), 1) ?? 1;
 
   // アクティブなフィルターラベルを生成
-  const activePeriodLabel = PERIOD_OPTIONS.find(
-    (o) => o.value === filters.periodMs
-  )?.label;
+  const activePeriodLabel = PERIOD_OPTIONS.find((o) => o.value === filters.periodMs)?.label;
   const hasNonDefaultFilters =
-    filters.categoryId !== null ||
-    filters.periodMs !== DEFAULT_FILTERS.periodMs;
+    filters.categoryId !== null || filters.periodMs !== DEFAULT_FILTERS.periodMs;
 
   return (
     <View className="flex-1">
-      <StatusBar
-        barStyle="dark-content"
-        translucent
-        backgroundColor="transparent"
-      />
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
 
       <MapView
         ref={mapRef}
@@ -393,10 +384,7 @@ export default function MapScreen() {
 
       {/* Search bar + filter chips — hidden in reporting mode */}
       {!isReporting && (
-        <View
-          style={{ paddingTop: insets.top + 8 }}
-          className="absolute left-0 right-0 px-4"
-        >
+        <View style={{ paddingTop: insets.top + 8 }} className="absolute left-0 right-0 px-4">
           {/* 検索バー（フィルターボタン統合） */}
           <View className="flex-row items-center bg-white rounded-2xl shadow-lg px-4 h-14 mb-2">
             <Ionicons name="search" size={20} color="#9aa0a6" />
@@ -491,13 +479,12 @@ export default function MapScreen() {
                   onRemove={() => removeFilter("categoryId")}
                 />
               )}
-              {filters.periodMs !== DEFAULT_FILTERS.periodMs &&
-                activePeriodLabel && (
-                  <ActiveFilterChip
-                    label={activePeriodLabel}
-                    onRemove={() => removeFilter("periodMs")}
-                  />
-                )}
+              {filters.periodMs !== DEFAULT_FILTERS.periodMs && activePeriodLabel && (
+                <ActiveFilterChip
+                  label={activePeriodLabel}
+                  onRemove={() => removeFilter("periodMs")}
+                />
+              )}
             </View>
           )}
         </View>
@@ -525,11 +512,7 @@ export default function MapScreen() {
             elevation: 6,
           }}
         >
-          <Ionicons
-            name="location"
-            size={16}
-            color={isPanning ? "#9aa0a6" : "#1a73e8"}
-          />
+          <Ionicons name="location" size={16} color={isPanning ? "#9aa0a6" : "#1a73e8"} />
           <Text
             style={{
               flex: 1,
@@ -629,9 +612,7 @@ export default function MapScreen() {
               backgroundColor: "#f3f4f6",
             }}
           >
-            <Text style={{ fontSize: 15, fontWeight: "500", color: "#6b7280" }}>
-              キャンセル
-            </Text>
+            <Text style={{ fontSize: 15, fontWeight: "500", color: "#6b7280" }}>キャンセル</Text>
           </Pressable>
         </View>
       )}
@@ -647,13 +628,7 @@ export default function MapScreen() {
   );
 }
 
-function ActiveFilterChip({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function ActiveFilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <Pressable
       onPress={onRemove}
@@ -667,9 +642,7 @@ function ActiveFilterChip({
         backgroundColor: "#e8f0fe",
       }}
     >
-      <Text style={{ fontSize: 12, fontWeight: "500", color: "#1a73e8" }}>
-        {label}
-      </Text>
+      <Text style={{ fontSize: 12, fontWeight: "500", color: "#1a73e8" }}>{label}</Text>
       <Ionicons name="close" size={12} color="#1a73e8" />
     </Pressable>
   );
