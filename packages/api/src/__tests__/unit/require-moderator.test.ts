@@ -88,8 +88,7 @@ describe("requireModerator", () => {
   });
 
   it("複数アドレスのリストで一致するアドレスがあればコンテキストを返す", async () => {
-    process.env["MODERATOR_EMAILS"] =
-      "mod1@example.com,mod2@example.com,admin@example.com";
+    process.env["MODERATOR_EMAILS"] = "mod1@example.com,mod2@example.com,admin@example.com";
     const ctx = makeContext("mod2@example.com");
     const result = await requireModerator(ctx);
     expect(result).toBe(ctx);

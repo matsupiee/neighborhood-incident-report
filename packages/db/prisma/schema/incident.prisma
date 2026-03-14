@@ -35,6 +35,7 @@ model Post {
   status      IncidentStatus @default(PENDING)
   publishedAt DateTime?
   userId      String
+  externalId  String?        @unique
 
   user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   abuseReports          AbuseReport[]

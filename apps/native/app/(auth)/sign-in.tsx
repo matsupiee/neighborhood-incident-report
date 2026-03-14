@@ -17,17 +17,13 @@ export default function SignInScreen() {
         className="px-6"
       >
         <View className="mb-10">
-          <Text className="text-3xl font-bold text-foreground mb-2">
-            ログイン
-          </Text>
+          <Text className="text-3xl font-bold text-foreground mb-2">ログイン</Text>
         </View>
 
         <SignIn />
 
         <View className="flex-row justify-center mt-6">
-          <Text className="text-sm text-muted">
-            アカウントをお持ちでない方は{" "}
-          </Text>
+          <Text className="text-sm text-muted">アカウントをお持ちでない方は </Text>
           <Pressable onPress={() => router.push("/(auth)/sign-up")}>
             <Text className="text-sm text-primary font-semibold">新規登録</Text>
           </Pressable>

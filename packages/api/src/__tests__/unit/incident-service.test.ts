@@ -117,9 +117,9 @@ describe("incident.service", () => {
   describe("createIncident", () => {
     it("レートリミット超過の場合はエラーを伝播する", async () => {
       mockCheckPostRateLimit.mockRejectedValue({ code: "FORBIDDEN" });
-      await expect(
-        createIncident(BASE_CREATE_INPUT, "user-1"),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(createIncident(BASE_CREATE_INPUT, "user-1")).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
     });
 
     it("NGワードフィルタが拒否した場合は BAD_REQUEST を投げる", async () => {
@@ -128,9 +128,9 @@ describe("incident.service", () => {
         filtered: "",
         reason: "個人情報が含まれています",
       });
-      await expect(
-        createIncident(BASE_CREATE_INPUT, "user-1"),
-      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      await expect(createIncident(BASE_CREATE_INPUT, "user-1")).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+      });
     });
 
     it("トラストスコアが高い場合は publishedAt に6時間後の日時を設定する", async () => {
@@ -323,10 +323,7 @@ describe("incident.service", () => {
       mockPostFindUnique.mockResolvedValue({ id: "post-1", status: "PUBLISHED" });
       mockAbuseReportCount.mockResolvedValue(1);
 
-      const result = await reportAbuse(
-        { postId: "post-1", reason: "PERSONAL_INFO" },
-        "user-1",
-      );
+      const result = await reportAbuse({ postId: "post-1", reason: "PERSONAL_INFO" }, "user-1");
       expect(result).toEqual({ reported: true });
     });
 
@@ -355,10 +352,7 @@ describe("incident.service", () => {
       mockPostFindUnique.mockResolvedValue({ id: "post-abc", status: "PUBLISHED" });
       mockAbuseReportCount.mockResolvedValue(0);
 
-      await reportAbuse(
-        { postId: "post-abc", reason: "FALSE_REPORT" },
-        "user-xyz",
-      );
+      await reportAbuse({ postId: "post-abc", reason: "FALSE_REPORT" }, "user-xyz");
 
       expect(mockAbuseReportCreate).toHaveBeenCalledTimes(1);
       const [createArgs] = mockAbuseReportCreate.mock.calls;

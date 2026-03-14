@@ -10,9 +10,7 @@ mock.module("@neighborhood-incident-report/db", () => ({
   },
 }));
 
-const { checkPostRateLimit } = await import(
-  "../../middleware/rate-limit"
-);
+const { checkPostRateLimit } = await import("../../middleware/rate-limit");
 
 describe("checkPostRateLimit", () => {
   beforeEach(() => {

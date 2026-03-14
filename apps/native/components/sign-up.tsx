@@ -9,28 +9,18 @@ import {
   TextField,
   useToast,
 } from "heroui-native";
-import { useRef } from "react";
-import { Text, TextInput, View } from "react-native";
+import { useRef, useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
+import { useRouter } from "expo-router";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
 
 const signUpSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Name is required")
-    .min(2, "Name must be at least 2 characters"),
-  email: z
-    .string()
-    .trim()
-    .min(1, "Email is required")
-    .email("Enter a valid email address"),
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(8, "Use at least 8 characters"),
+  name: z.string().trim().min(1, "Name is required").min(2, "Name must be at least 2 characters"),
+  email: z.string().trim().min(1, "Email is required").email("Enter a valid email address"),
+  password: z.string().min(1, "Password is required").min(8, "Use at least 8 characters"),
 });
 
 function getErrorMessage(error: unknown): string | null {
@@ -64,6 +54,8 @@ export function SignUp() {
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
   const { toast } = useToast();
+  const router = useRouter();
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -75,6 +67,13 @@ export function SignUp() {
       onSubmit: signUpSchema,
     },
     onSubmit: async ({ value, formApi }) => {
+      if (!agreedToTerms) {
+        toast.show({
+          variant: "danger",
+          label: "利用規約およびプライバシーポリシーに同意してください",
+        });
+        return;
+      }
       await authClient.signUp.email(
         {
           name: value.name.trim(),
@@ -96,7 +95,7 @@ export function SignUp() {
             });
             queryClient.refetchQueries();
           },
-        }
+        },
       );
     },
   });
@@ -184,9 +183,40 @@ export function SignUp() {
                   )}
                 </form.Field>
 
+                <Pressable
+                  onPress={() => setAgreedToTerms((v) => !v)}
+                  className="flex-row items-center gap-3 py-1"
+                >
+                  <View
+                    className="w-5 h-5 rounded border-2 items-center justify-center"
+                    style={{
+                      borderColor: agreedToTerms ? "#1a73e8" : "#dadce0",
+                      backgroundColor: agreedToTerms ? "#1a73e8" : "transparent",
+                    }}
+                  >
+                    {agreedToTerms && <Text className="text-white text-xs font-bold">✓</Text>}
+                  </View>
+                  <Text className="flex-1 text-sm text-gray-600">
+                    <Text
+                      className="text-[#1a73e8]"
+                      onPress={() => router.push("/screens/terms-of-service")}
+                    >
+                      利用規約
+                    </Text>
+                    {"および"}
+                    <Text
+                      className="text-[#1a73e8]"
+                      onPress={() => router.push("/screens/privacy-policy")}
+                    >
+                      プライバシーポリシー
+                    </Text>
+                    {"に同意します"}
+                  </Text>
+                </Pressable>
+
                 <Button
                   onPress={form.handleSubmit}
-                  isDisabled={isSubmitting}
+                  isDisabled={isSubmitting || !agreedToTerms}
                   className="mt-1"
                 >
                   {isSubmitting ? (

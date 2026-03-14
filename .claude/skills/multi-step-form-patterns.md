@@ -61,7 +61,7 @@ export const useCreate = () => {
     const { error, data } = await executeCreate({
       input: {
         // 最小限の必須フィールドのみ
-        name: '',
+        name: "",
         // その他デフォルト値
       },
     });
@@ -69,7 +69,7 @@ export const useCreate = () => {
     if (error || !data) {
       return {
         id: null,
-        error: error?.message ?? '作成に失敗しました',
+        error: error?.message ?? "作成に失敗しました",
       };
     }
 
@@ -137,8 +137,8 @@ app/(authenticated)/feature/(form)/
 
 ```typescript
 // _hooks/useFormData.ts
-import { graphql, ResultOf } from '@/libs/graphql/tada';
-import { useQuery } from 'urql';
+import { graphql, ResultOf } from "@/libs/graphql/tada";
+import { useQuery } from "urql";
 
 const DataQuery = graphql(`
   query DataForEdit($id: ID!) {
@@ -154,7 +154,7 @@ const DataQuery = graphql(`
   }
 `);
 
-export type DataForEdit = NonNullable<ResultOf<typeof DataQuery>['data']>;
+export type DataForEdit = NonNullable<ResultOf<typeof DataQuery>["data"]>;
 
 export function useFormData(id: string) {
   const [{ data, fetching }] = useQuery({
@@ -179,18 +179,18 @@ export function useFormData(id: string) {
 
 ```typescript
 // _utils/step1-schema.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 const nestedSchema = z.object({
   id: z.string().optional(), // 編集時に必要
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, "Name is required"),
   value: z.number(),
 });
 
 export const step1Schema = z.object({
-  field1: z.string().min(1, 'Field1 is required'),
+  field1: z.string().min(1, "Field1 is required"),
   field2: z.string(),
-  items: z.array(nestedSchema).min(1, 'At least one item required'),
+  items: z.array(nestedSchema).min(1, "At least one item required"),
 });
 
 export type Step1FormData = z.infer<typeof step1Schema>;
@@ -204,12 +204,10 @@ export type Step1FormData = z.infer<typeof step1Schema>;
 
 ```typescript
 // _utils/build-step1-form-default-values.ts
-import { DataForEdit } from '../../_hooks/useFormData';
-import { Step1FormData } from './step1-schema';
+import { DataForEdit } from "../../_hooks/useFormData";
+import { Step1FormData } from "./step1-schema";
 
-export const buildStep1FormDefaultValues = (
-  data: DataForEdit,
-): Step1FormData => {
+export const buildStep1FormDefaultValues = (data: DataForEdit): Step1FormData => {
   return {
     field1: data.field1,
     field2: data.field2,
@@ -217,8 +215,8 @@ export const buildStep1FormDefaultValues = (
       id: item.id,
       name: item.name,
       // 日時のフォーマット変換例
-      date: new Date(item.timestamp).toISOString().split('T')[0],
-      time: new Date(item.timestamp).toISOString().split('T')[1].slice(0, 5),
+      date: new Date(item.timestamp).toISOString().split("T")[0],
+      time: new Date(item.timestamp).toISOString().split("T")[1].slice(0, 5),
     })),
   };
 };
@@ -314,10 +312,10 @@ export function Step1Form({ id }: { id: string }) {
 
 ```typescript
 // _hooks/use-submit-step1.ts
-import { graphql } from '@/libs/graphql/tada';
-import { useRouter } from 'next/navigation';
-import { useMutation } from 'urql';
-import { Step1FormData } from '../_utils/step1-schema';
+import { graphql } from "@/libs/graphql/tada";
+import { useRouter } from "next/navigation";
+import { useMutation } from "urql";
+import { Step1FormData } from "../_utils/step1-schema";
 
 const UpdateMutation = graphql(`
   mutation Update($input: UpdateInput!) {
@@ -367,7 +365,7 @@ export const useSubmitStep1 = (id: string) => {
 
     if (error) {
       // エラーハンドリング
-      console.error('Update failed:', error);
+      console.error("Update failed:", error);
       return;
     }
 
@@ -393,7 +391,7 @@ export const useSubmitStep1 = (id: string) => {
       });
 
       if (updateError) {
-        console.error('Update nested failed:', updateError);
+        console.error("Update nested failed:", updateError);
         return;
       }
     }
@@ -408,7 +406,7 @@ export const useSubmitStep1 = (id: string) => {
       });
 
       if (createError) {
-        console.error('Create nested failed:', createError);
+        console.error("Create nested failed:", createError);
         return;
       }
     }
@@ -512,7 +510,7 @@ useEffect(() => {
 // BAD: エラーを無視
 const { error } = await executeUpdate(input);
 // エラーチェックなし
-router.push('/next-step'); // ❌ エラー時も遷移してしまう
+router.push("/next-step"); // ❌ エラー時も遷移してしまう
 ```
 
 #### ✅ 正しい実装
@@ -523,14 +521,14 @@ const { error } = await executeUpdate(input);
 
 if (error) {
   // エラーメッセージを表示
-  form.setError('root', {
-    message: error.message || '更新に失敗しました',
+  form.setError("root", {
+    message: error.message || "更新に失敗しました",
   });
   return; // ここで処理を中断
 }
 
 // 成功時のみ遷移
-router.push('/next-step');
+router.push("/next-step");
 ```
 
 ---

@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
+import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import { ScrollView, Text, View, Pressable } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, Linking, ScrollView, Text, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { authClient } from "@/lib/auth-client";
@@ -15,37 +17,17 @@ type MenuItemProps = {
   isDestructive?: boolean;
 };
 
-function MenuItem({
-  icon,
-  label,
-  value,
-  onPress,
-  isDestructive,
-}: MenuItemProps) {
+function MenuItem({ icon, label, value, onPress, isDestructive }: MenuItemProps) {
   return (
-    <Pressable
-      onPress={onPress}
-      className="flex-row items-center px-5 py-4 active:bg-gray-50"
-    >
+    <Pressable onPress={onPress} className="flex-row items-center px-5 py-4 active:bg-gray-50">
       <View className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center mr-4">
-        <Ionicons
-          name={icon}
-          size={18}
-          color={isDestructive ? "#ea4335" : "#5f6368"}
-        />
+        <Ionicons name={icon} size={18} color={isDestructive ? "#ea4335" : "#5f6368"} />
       </View>
-      <Text
-        className="flex-1 text-base"
-        style={{ color: isDestructive ? "#ea4335" : "#3c4043" }}
-      >
+      <Text className="flex-1 text-base" style={{ color: isDestructive ? "#ea4335" : "#3c4043" }}>
         {label}
       </Text>
-      {value ? (
-        <Text className="text-sm text-gray-400 mr-2">{value}</Text>
-      ) : null}
-      {!isDestructive && (
-        <Ionicons name="chevron-forward" size={16} color="#dadce0" />
-      )}
+      {value ? <Text className="text-sm text-gray-400 mr-2">{value}</Text> : null}
+      {!isDestructive && <Ionicons name="chevron-forward" size={16} color="#dadce0" />}
     </Pressable>
   );
 }
@@ -56,6 +38,39 @@ export default function ProfileScreen() {
   const { data: session } = authClient.useSession();
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
   const isConnected = healthCheck?.data === "OK";
+
+  const [locationStatus, setLocationStatus] = useState<Location.PermissionStatus | null>(null);
+
+  useEffect(() => {
+    Location.getForegroundPermissionsAsync().then(({ status }) => {
+      setLocationStatus(status);
+    });
+  }, []);
+
+  const handleLocationPress = async () => {
+    if (locationStatus === Location.PermissionStatus.GRANTED) {
+      Alert.alert("位置情報", "位置情報の許可を変更するには設定アプリを開いてください。", [
+        { text: "キャンセル", style: "cancel" },
+        { text: "設定を開く", onPress: () => Linking.openSettings() },
+      ]);
+      return;
+    }
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    setLocationStatus(status);
+    if (status === Location.PermissionStatus.DENIED) {
+      Alert.alert("位置情報が拒否されました", "設定アプリから許可してください。", [
+        { text: "キャンセル", style: "cancel" },
+        { text: "設定を開く", onPress: () => Linking.openSettings() },
+      ]);
+    }
+  };
+
+  const locationValue =
+    locationStatus === Location.PermissionStatus.GRANTED
+      ? "ON"
+      : locationStatus === Location.PermissionStatus.DENIED
+        ? "OFF"
+        : "未設定";
 
   const userInitials = session?.user?.name
     ? session.user.name
@@ -81,9 +96,7 @@ export default function ProfileScreen() {
         <View className="p-5 flex-row items-center">
           {/* Avatar */}
           <View className="w-16 h-16 rounded-full bg-[#1a73e8] items-center justify-center mr-4 shadow-md">
-            <Text className="text-2xl font-bold text-white">
-              {userInitials}
-            </Text>
+            <Text className="text-2xl font-bold text-white">{userInitials}</Text>
           </View>
           <View className="flex-1">
             <Text className="text-lg font-semibold text-gray-800">
@@ -110,9 +123,7 @@ export default function ProfileScreen() {
                 borderRightColor: "#f3f4f6",
               }}
             >
-              <Text className="text-xl font-bold text-gray-800">
-                {stat.value}
-              </Text>
+              <Text className="text-xl font-bold text-gray-800">{stat.value}</Text>
               <Text className="text-xs text-gray-400 mt-0.5">{stat.label}</Text>
             </View>
           ))}
@@ -141,7 +152,12 @@ export default function ProfileScreen() {
         <View className="h-px bg-gray-100 ml-16" />
         <MenuItem icon="shield-checkmark-outline" label="プライバシー" />
         <View className="h-px bg-gray-100 ml-16" />
-        <MenuItem icon="location-outline" label="位置情報" value="ON" />
+        <MenuItem
+          icon="location-outline"
+          label="位置情報"
+          value={locationValue}
+          onPress={handleLocationPress}
+        />
         <View className="h-px bg-gray-100 ml-16" />
         <MenuItem icon="language-outline" label="言語" value="日本語" />
       </View>
@@ -153,13 +169,19 @@ export default function ProfileScreen() {
         </Text>
         <MenuItem icon="help-circle-outline" label="ヘルプ" />
         <View className="h-px bg-gray-100 ml-16" />
-        <MenuItem icon="document-text-outline" label="利用規約" />
+        <MenuItem
+          icon="document-text-outline"
+          label="利用規約"
+          onPress={() => router.push("/screens/terms-of-service")}
+        />
         <View className="h-px bg-gray-100 ml-16" />
         <MenuItem
-          icon="information-circle-outline"
-          label="バージョン"
-          value="1.0.0"
+          icon="shield-outline"
+          label="プライバシーポリシー"
+          onPress={() => router.push("/screens/privacy-policy")}
         />
+        <View className="h-px bg-gray-100 ml-16" />
+        <MenuItem icon="information-circle-outline" label="バージョン" value="1.0.0" />
       </View>
 
       {/* Moderator Section */}

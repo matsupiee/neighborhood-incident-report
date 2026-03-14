@@ -18,27 +18,19 @@ export const moderationRouter = {
     return await listPendingPosts();
   }),
 
-  approve: moderatorProcedure
-    .input(moderationApproveSchema)
-    .handler(async ({ input }) => {
-      return await approvePost(input);
-    }),
+  approve: moderatorProcedure.input(moderationApproveSchema).handler(async ({ input }) => {
+    return await approvePost(input);
+  }),
 
-  reject: moderatorProcedure
-    .input(moderationRejectSchema)
-    .handler(async ({ input }) => {
-      return await rejectPost(input);
-    }),
+  reject: moderatorProcedure.input(moderationRejectSchema).handler(async ({ input }) => {
+    return await rejectPost(input);
+  }),
 
-  banUser: moderatorProcedure
-    .input(moderationBanUserSchema)
-    .handler(async ({ input }) => {
-      return await banUser(input);
-    }),
+  banUser: moderatorProcedure.input(moderationBanUserSchema).handler(async ({ input }) => {
+    return await banUser(input);
+  }),
 
-  unbanUser: moderatorProcedure
-    .input(moderationUnbanUserSchema)
-    .handler(async ({ input }) => {
-      return await unbanUser(input);
-    }),
+  unbanUser: moderatorProcedure.input(moderationUnbanUserSchema).handler(async ({ input }) => {
+    return await unbanUser(input);
+  }),
 };

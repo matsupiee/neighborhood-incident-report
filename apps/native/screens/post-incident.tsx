@@ -34,22 +34,9 @@ const TIME_RANGE_OPTIONS = [
 
 // Form validation schema
 const postFormSchema = z.object({
-  timeRange: z.enum([
-    "MIDNIGHT",
-    "MORNING",
-    "DAYTIME",
-    "EVENING",
-    "NIGHT_EARLY",
-    "NIGHT_LATE",
-  ]),
-  categoryIds: z
-    .array(z.string())
-    .min(1, "最低1つのカテゴリを選択してください")
-    .max(5),
-  description: z
-    .string()
-    .min(1, "説明は必須です")
-    .max(200, "説明は200文字以内です"),
+  timeRange: z.enum(["MIDNIGHT", "MORNING", "DAYTIME", "EVENING", "NIGHT_EARLY", "NIGHT_LATE"]),
+  categoryIds: z.array(z.string()).min(1, "最低1つのカテゴリを選択してください").max(5),
+  description: z.string().min(1, "説明は必須です").max(200, "説明は200文字以内です"),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
 });
@@ -64,12 +51,10 @@ type Category = {
 export default function PostIncidentScreen() {
   const router = useRouter();
   const { session, isLoading: authLoading } = useAuthGuard();
-  const [locationStatus, setLocationStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
-    new Set(),
+  const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "success" | "error">(
+    "idle",
   );
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
 
   const foregroundColor = useThemeColor("foreground");
   const mutedColor = useThemeColor("muted");
@@ -96,10 +81,7 @@ export default function PostIncidentScreen() {
       // Validate
       const parsed = postFormSchema.safeParse(value);
       if (!parsed.success) {
-        Alert.alert(
-          "入力エラー",
-          parsed.error.errors.map((e) => e.message).join("\n"),
-        );
+        Alert.alert("入力エラー", parsed.error.errors.map((e) => e.message).join("\n"));
         return;
       }
 
@@ -172,15 +154,10 @@ export default function PostIncidentScreen() {
   return (
     <Container>
       <ScrollView contentContainerClassName="p-4">
-        <Text className="text-2xl font-semibold text-foreground mb-6">
-          インシデント投稿
-        </Text>
+        <Text className="text-2xl font-semibold text-foreground mb-6">インシデント投稿</Text>
 
         {/* Location status */}
-        <Surface
-          variant="secondary"
-          className="mb-4 p-3 rounded-lg flex-row items-center gap-3"
-        >
+        <Surface variant="secondary" className="mb-4 p-3 rounded-lg flex-row items-center gap-3">
           {locationStatus === "loading" && <ActivityIndicator size="small" />}
           {locationStatus === "success" && (
             <Ionicons name="checkmark-circle" size={20} color={successColor} />
@@ -201,9 +178,7 @@ export default function PostIncidentScreen() {
 
         {/* Time range field */}
         <View className="mb-6">
-          <Text className="text-foreground font-semibold mb-3">
-            時間帯を選択
-          </Text>
+          <Text className="text-foreground font-semibold mb-3">時間帯を選択</Text>
           <form.Field
             name="timeRange"
             children={(field) => (
@@ -241,9 +216,7 @@ export default function PostIncidentScreen() {
 
         {/* Categories field */}
         <View className="mb-6">
-          <Text className="text-foreground font-semibold mb-3">
-            カテゴリを選択（複数可）
-          </Text>
+          <Text className="text-foreground font-semibold mb-3">カテゴリを選択（複数可）</Text>
           <form.Field
             name="categoryIds"
             children={(field) => (
@@ -267,9 +240,7 @@ export default function PostIncidentScreen() {
                     className="p-3 rounded-lg border border-muted flex-row items-center gap-3"
                   >
                     <Checkbox
-                      isSelected={(field.state.value || []).includes(
-                        category.id,
-                      )}
+                      isSelected={(field.state.value || []).includes(category.id)}
                       onSelectedChange={(selected) => {
                         const newIds = new Set(field.state.value || []);
                         if (selected) {
@@ -282,9 +253,7 @@ export default function PostIncidentScreen() {
                         field.setValue(Array.from(newIds));
                       }}
                     />
-                    <Text className="flex-1 text-foreground">
-                      {category.name}
-                    </Text>
+                    <Text className="flex-1 text-foreground">{category.name}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -299,9 +268,7 @@ export default function PostIncidentScreen() {
 
         {/* Description field */}
         <View className="mb-6">
-          <Text className="text-foreground font-semibold mb-2">
-            説明（200文字以内）
-          </Text>
+          <Text className="text-foreground font-semibold mb-2">説明（200文字以内）</Text>
           <form.Field
             name="description"
             children={(field) => (

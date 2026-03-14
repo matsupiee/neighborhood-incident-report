@@ -1,9 +1,7 @@
 const path = require("path");
 const { getDefaultConfig } = require("expo/metro-config");
 const { withUniwindConfig } = require("uniwind/metro");
-const {
-  wrapWithReanimatedMetroConfig,
-} = require("react-native-reanimated/metro-config");
+const { wrapWithReanimatedMetroConfig } = require("react-native-reanimated/metro-config");
 
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, "../..");

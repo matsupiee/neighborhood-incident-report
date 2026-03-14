@@ -76,6 +76,7 @@ app.get("/", (c) => {
 });
 
 import { serve } from "@hono/node-server";
+import { runPoliceDataImport } from "@neighborhood-incident-report/api/lib/police-data/importer";
 
 serve(
   {
@@ -84,5 +85,35 @@ serve(
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
+    schedulePoliceDataImport();
   },
 );
+
+/** 警察オープンデータを6時間ごとに自動インポートする */
+function schedulePoliceDataImport() {
+  const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+
+  // 起動時に1回実行
+  runPoliceDataImport()
+    .then((result) => {
+      console.log(
+        `[PoliceDataImport] Initial import: imported=${result.imported} skipped=${result.skipped} failed=${result.failed}`,
+      );
+    })
+    .catch((err) => {
+      console.error("[PoliceDataImport] Initial import failed:", err);
+    });
+
+  // 以降は6時間ごとに実行
+  setInterval(() => {
+    runPoliceDataImport()
+      .then((result) => {
+        console.log(
+          `[PoliceDataImport] Scheduled import: imported=${result.imported} skipped=${result.skipped} failed=${result.failed}`,
+        );
+      })
+      .catch((err) => {
+        console.error("[PoliceDataImport] Scheduled import failed:", err);
+      });
+  }, SIX_HOURS_MS);
+}

@@ -3,14 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { Button, Card, Separator, Surface, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
-import {
-  Text,
-  View,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-  Pressable,
-} from "react-native";
+import { Text, View, ScrollView, Alert, ActivityIndicator, Pressable } from "react-native";
 
 import { Container } from "@/components/container";
 import { useAuthGuard } from "@/lib/auth-guard";
@@ -69,15 +62,8 @@ export default function ReportGuideScreen() {
     return (
       <Container className="items-center justify-center">
         <Ionicons name="alert-circle-outline" size={48} color={mutedColor} />
-        <Text className="mt-4 text-foreground text-base">
-          エラーが発生しました
-        </Text>
-        <Button
-          variant="primary"
-          onPress={() => router.back()}
-          className="mt-6 px-8"
-          size="lg"
-        >
+        <Text className="mt-4 text-foreground text-base">エラーが発生しました</Text>
+        <Button variant="primary" onPress={() => router.back()} className="mt-6 px-8" size="lg">
           戻る
         </Button>
       </Container>
@@ -92,9 +78,7 @@ export default function ReportGuideScreen() {
           <Text className="text-xl font-semibold text-foreground text-center">
             通報を受け付けました
           </Text>
-          <Text className="text-sm text-muted text-center">
-            ご報告ありがとうございます
-          </Text>
+          <Text className="text-sm text-muted text-center">ご報告ありがとうございます</Text>
         </View>
       </Container>
     );
@@ -108,11 +92,7 @@ export default function ReportGuideScreen() {
 
     reportMutation.mutate({
       postId,
-      reason: selectedReason as
-        | "PERSONAL_INFO"
-        | "FALSE_REPORT"
-        | "HARASSMENT"
-        | "OTHER",
+      reason: selectedReason as "PERSONAL_INFO" | "FALSE_REPORT" | "HARASSMENT" | "OTHER",
     });
   };
 
@@ -126,9 +106,7 @@ export default function ReportGuideScreen() {
       >
         <Card className="mb-6 p-4">
           <Card.Header className="pb-3">
-            <Text className="text-lg font-semibold text-foreground">
-              投稿を報告する
-            </Text>
+            <Text className="text-lg font-semibold text-foreground">投稿を報告する</Text>
           </Card.Header>
           <Separator className="my-3" />
           <Text className="text-sm text-muted leading-6 mb-4">
@@ -137,9 +115,7 @@ export default function ReportGuideScreen() {
         </Card>
 
         <View className="mb-6">
-          <Text className="text-foreground font-semibold mb-3">
-            通報理由を選択してください
-          </Text>
+          <Text className="text-foreground font-semibold mb-3">通報理由を選択してください</Text>
           <View className="gap-2">
             {ABUSE_REASON_OPTIONS.map((option) => (
               <Surface
@@ -157,9 +133,7 @@ export default function ReportGuideScreen() {
                 >
                   <View
                     className={`w-5 h-5 rounded-full border-2 items-center justify-center ${
-                      selectedReason === option.value
-                        ? "border-primary bg-primary"
-                        : "border-muted"
+                      selectedReason === option.value ? "border-primary bg-primary" : "border-muted"
                     }`}
                   >
                     {selectedReason === option.value && (

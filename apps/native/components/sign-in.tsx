@@ -17,15 +17,8 @@ import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
 
 const signInSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .min(1, "Email is required")
-    .email("Enter a valid email address"),
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(8, "Use at least 8 characters"),
+  email: z.string().trim().min(1, "Email is required").email("Enter a valid email address"),
+  password: z.string().min(1, "Password is required").min(8, "Use at least 8 characters"),
 });
 
 function getErrorMessage(error: unknown): string | null {
@@ -88,7 +81,7 @@ function SignIn() {
             });
             queryClient.refetchQueries();
           },
-        }
+        },
       );
     },
   });
@@ -154,11 +147,7 @@ function SignIn() {
                   )}
                 </form.Field>
 
-                <Button
-                  onPress={form.handleSubmit}
-                  isDisabled={isSubmitting}
-                  className="mt-1"
-                >
+                <Button onPress={form.handleSubmit} isDisabled={isSubmitting} className="mt-1">
                   {isSubmitting ? (
                     <Spinner size="sm" color="default" />
                   ) : (

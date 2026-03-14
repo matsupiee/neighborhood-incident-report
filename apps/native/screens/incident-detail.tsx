@@ -107,12 +107,7 @@ export default function IncidentDetailScreen() {
       <Container className="items-center justify-center">
         <Ionicons name="alert-circle-outline" size={48} color={dangerColor} />
         <Text className="mt-4 text-danger text-base">エラーが発生しました</Text>
-        <Button
-          color="primary"
-          onPress={() => router.back()}
-          className="mt-6 px-8"
-          size="lg"
-        >
+        <Button color="primary" onPress={() => router.back()} className="mt-6 px-8" size="lg">
           戻る
         </Button>
       </Container>
@@ -122,32 +117,17 @@ export default function IncidentDetailScreen() {
   if (!post) {
     return (
       <Container className="items-center justify-center">
-        <Ionicons
-          name="information-circle-outline"
-          size={48}
-          color={mutedColor}
-        />
-        <Text className="mt-4 text-foreground text-base">
-          投稿が見つかりません
-        </Text>
-        <Button
-          color="primary"
-          onPress={() => router.back()}
-          className="mt-6 px-8"
-          size="lg"
-        >
+        <Ionicons name="information-circle-outline" size={48} color={mutedColor} />
+        <Text className="mt-4 text-foreground text-base">投稿が見つかりません</Text>
+        <Button color="primary" onPress={() => router.back()} className="mt-6 px-8" size="lg">
           戻る
         </Button>
       </Container>
     );
   }
 
-  const relativeTime = post.publishedAt
-    ? getRelativeTime(post.publishedAt)
-    : "未公開";
-  const categories = post.incidentCategoryPosts.map(
-    (cp) => cp.incidentCategory,
-  );
+  const relativeTime = post.publishedAt ? getRelativeTime(post.publishedAt) : "未公開";
+  const categories = post.incidentCategoryPosts.map((cp) => cp.incidentCategory);
 
   return (
     <Container>
@@ -184,9 +164,7 @@ export default function IncidentDetailScreen() {
 
           {categories.length > 0 && (
             <View className="mb-4">
-              <Text className="text-foreground text-xs font-semibold mb-2">
-                カテゴリ
-              </Text>
+              <Text className="text-foreground text-xs font-semibold mb-2">カテゴリ</Text>
               <View className="flex-row flex-wrap gap-2">
                 {categories.map((category) => (
                   <Chip key={category.id} variant="secondary" size="sm">
@@ -198,20 +176,14 @@ export default function IncidentDetailScreen() {
           )}
 
           <View className="mb-4">
-            <Text className="text-foreground text-xs font-semibold mb-2">
-              詳細
-            </Text>
-            <Text className="text-foreground text-sm leading-6">
-              {post.description}
-            </Text>
+            <Text className="text-foreground text-xs font-semibold mb-2">詳細</Text>
+            <Text className="text-foreground text-sm leading-6">{post.description}</Text>
           </View>
 
           <Card.Divider className="my-3" />
 
           <View className="flex-row items-center justify-between">
-            <Text className="text-muted text-xs">
-              ステータス: {post.status}
-            </Text>
+            <Text className="text-muted text-xs">ステータス: {post.status}</Text>
           </View>
         </Card>
 

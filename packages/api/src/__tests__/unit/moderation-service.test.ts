@@ -18,9 +18,8 @@ mock.module("@neighborhood-incident-report/db", () => ({
   },
 }));
 
-const { listPendingPosts, approvePost, rejectPost, banUser } = await import(
-  "../../routers/moderation/moderation.service"
-);
+const { listPendingPosts, approvePost, rejectPost, banUser } =
+  await import("../../routers/moderation/moderation.service");
 
 describe("moderation.service", () => {
   beforeEach(() => {
@@ -160,9 +159,7 @@ describe("moderation.service", () => {
 
   describe("banUser", () => {
     it("未実装エラーを投げる", async () => {
-      await expect(banUser()).rejects.toThrow(
-        "banUser is not implemented yet (Phase 5-3)",
-      );
+      await expect(banUser()).rejects.toThrow("banUser is not implemented yet (Phase 5-3)");
     });
   });
 });

@@ -122,10 +122,10 @@ export async function createExample(input: ExampleCreateInput, userId: string) {
 Always use `ORPCError` — never throw plain `Error` from handlers or services.
 
 ```typescript
-throw new ORPCError("NOT_FOUND",    { message: "Post not found" });
+throw new ORPCError("NOT_FOUND", { message: "Post not found" });
 throw new ORPCError("UNAUTHORIZED");
-throw new ORPCError("FORBIDDEN",    { message: "Rate limit exceeded" });
-throw new ORPCError("BAD_REQUEST",  { message: "Invalid input" });
+throw new ORPCError("FORBIDDEN", { message: "Rate limit exceeded" });
+throw new ORPCError("BAD_REQUEST", { message: "Invalid input" });
 ```
 
 ## Prisma Query Pattern

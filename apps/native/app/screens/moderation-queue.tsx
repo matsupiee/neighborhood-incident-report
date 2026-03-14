@@ -37,9 +37,7 @@ export default function ModerationQueueScreen() {
   const approveMutation = useMutation(
     orpc.moderation.approve.mutationOptions({
       onSuccess: () => {
-        globalQueryClient.invalidateQueries(
-          orpc.moderation.listPending.queryOptions(),
-        );
+        globalQueryClient.invalidateQueries(orpc.moderation.listPending.queryOptions());
       },
     }),
   );
@@ -47,9 +45,7 @@ export default function ModerationQueueScreen() {
   const rejectMutation = useMutation(
     orpc.moderation.reject.mutationOptions({
       onSuccess: () => {
-        globalQueryClient.invalidateQueries(
-          orpc.moderation.listPending.queryOptions(),
-        );
+        globalQueryClient.invalidateQueries(orpc.moderation.listPending.queryOptions());
       },
     }),
   );
@@ -57,9 +53,7 @@ export default function ModerationQueueScreen() {
   const banMutation = useMutation(
     orpc.moderation.banUser.mutationOptions({
       onSuccess: () => {
-        globalQueryClient.invalidateQueries(
-          orpc.moderation.listPending.queryOptions(),
-        );
+        globalQueryClient.invalidateQueries(orpc.moderation.listPending.queryOptions());
         Alert.alert("完了", "ユーザーをBANしました");
       },
       onError: (error) => {
@@ -98,7 +92,7 @@ export default function ModerationQueueScreen() {
         {
           text: "BAN実行",
           style: "destructive",
-          onPress: (reason) => {
+          onPress: (reason: string | undefined) => {
             if (!reason || reason.trim().length === 0) {
               Alert.alert("エラー", "理由を入力してください");
               return;
@@ -122,16 +116,12 @@ export default function ModerationQueueScreen() {
         >
           <Ionicons name="arrow-back" size={22} color="#3c4043" />
         </Pressable>
-        <Text className="text-xl font-bold text-gray-800 flex-1">
-          モデレーションキュー
-        </Text>
+        <Text className="text-xl font-bold text-gray-800 flex-1">モデレーションキュー</Text>
         {isLoading || isRefetching ? (
           <ActivityIndicator size="small" color="#1a73e8" />
         ) : (
           <View className="bg-[#1a73e8] rounded-full px-3 py-1">
-            <Text className="text-white text-xs font-bold">
-              {pendingPosts?.length ?? 0} 件
-            </Text>
+            <Text className="text-white text-xs font-bold">{pendingPosts?.length ?? 0} 件</Text>
           </View>
         )}
       </View>
@@ -140,11 +130,7 @@ export default function ModerationQueueScreen() {
         className="flex-1"
         contentContainerStyle={{ padding: 16, gap: 12 }}
         refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            tintColor="#1a73e8"
-          />
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#1a73e8" />
         }
       >
         {isLoading ? (
@@ -158,32 +144,20 @@ export default function ModerationQueueScreen() {
             <Text className="text-gray-600 text-base font-semibold mt-4">
               審査待ちの投稿はありません
             </Text>
-            <Text className="text-gray-400 text-sm mt-1">
-              すべての投稿が処理されました
-            </Text>
+            <Text className="text-gray-400 text-sm mt-1">すべての投稿が処理されました</Text>
           </View>
         ) : (
           pendingPosts?.map((post) => (
-            <View
-              key={post.id}
-              className="bg-white rounded-2xl shadow-sm overflow-hidden"
-            >
+            <View key={post.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
               {/* Post metadata */}
               <View className="px-5 pt-5 pb-3">
                 <View className="flex-row items-center mb-2">
                   <View className="flex-row flex-wrap gap-1 flex-1">
-                    {post.incidentCategoryPosts.map(
-                      ({ incidentCategory: cat }) => (
-                        <View
-                          key={cat.id}
-                          className="rounded-full px-2 py-0.5 bg-[#e8f0fe]"
-                        >
-                          <Text className="text-xs font-medium text-[#1a73e8]">
-                            {cat.name}
-                          </Text>
-                        </View>
-                      ),
-                    )}
+                    {post.incidentCategoryPosts.map(({ incidentCategory: cat }) => (
+                      <View key={cat.id} className="rounded-full px-2 py-0.5 bg-[#e8f0fe]">
+                        <Text className="text-xs font-medium text-[#1a73e8]">{cat.name}</Text>
+                      </View>
+                    ))}
                   </View>
                   <Text className="text-xs text-gray-400">
                     {new Date(post.createdAt).toLocaleDateString("ja-JP", {
@@ -199,51 +173,31 @@ export default function ModerationQueueScreen() {
                   {TIME_RANGE_LABELS[post.timeRange] ?? post.timeRange}
                 </Text>
 
-                <Text className="text-base text-gray-800 leading-relaxed">
-                  {post.description}
-                </Text>
+                <Text className="text-base text-gray-800 leading-relaxed">{post.description}</Text>
 
-                <Text className="text-xs text-gray-400 mt-2">
-                  メッシュ: {post.meshCode}
-                </Text>
+                <Text className="text-xs text-gray-400 mt-2">メッシュ: {post.meshCode}</Text>
               </View>
 
               {/* Actions */}
               <View className="border-t border-gray-100 flex-row">
                 <Pressable
                   onPress={() => handleApprove(post.id)}
-                  disabled={
-                    approveMutation.isPending || rejectMutation.isPending
-                  }
+                  disabled={approveMutation.isPending || rejectMutation.isPending}
                   className="flex-1 py-3 flex-row items-center justify-center gap-2 active:bg-green-50"
                 >
-                  <Ionicons
-                    name="checkmark-circle-outline"
-                    size={18}
-                    color="#34a853"
-                  />
-                  <Text className="text-sm font-semibold text-[#34a853]">
-                    承認
-                  </Text>
+                  <Ionicons name="checkmark-circle-outline" size={18} color="#34a853" />
+                  <Text className="text-sm font-semibold text-[#34a853]">承認</Text>
                 </Pressable>
 
                 <View className="w-px bg-gray-100" />
 
                 <Pressable
                   onPress={() => handleReject(post.id)}
-                  disabled={
-                    approveMutation.isPending || rejectMutation.isPending
-                  }
+                  disabled={approveMutation.isPending || rejectMutation.isPending}
                   className="flex-1 py-3 flex-row items-center justify-center gap-2 active:bg-orange-50"
                 >
-                  <Ionicons
-                    name="close-circle-outline"
-                    size={18}
-                    color="#fa7b17"
-                  />
-                  <Text className="text-sm font-semibold text-[#fa7b17]">
-                    却下
-                  </Text>
+                  <Ionicons name="close-circle-outline" size={18} color="#fa7b17" />
+                  <Text className="text-sm font-semibold text-[#fa7b17]">却下</Text>
                 </Pressable>
 
                 <View className="w-px bg-gray-100" />
@@ -254,9 +208,7 @@ export default function ModerationQueueScreen() {
                   className="flex-1 py-3 flex-row items-center justify-center gap-2 active:bg-red-50"
                 >
                   <Ionicons name="ban-outline" size={18} color="#ea4335" />
-                  <Text className="text-sm font-semibold text-[#ea4335]">
-                    BAN
-                  </Text>
+                  <Text className="text-sm font-semibold text-[#ea4335]">BAN</Text>
                 </Pressable>
               </View>
             </View>

@@ -39,17 +39,15 @@ Figma URL から `fileKey` と `nodeId` を抽出します。
 //   → fileKey: 'ABC123', nodeId: '1:2'
 
 const parseFigmaUrl = (input: string) => {
-  const urlMatch = input.match(
-    /figma\.com\/design\/([a-z0-9]+).*node-id=([0-9\-]+)/i,
-  );
+  const urlMatch = input.match(/figma\.com\/design\/([a-z0-9]+).*node-id=([0-9\-]+)/i);
   if (urlMatch) {
     const [_, fileKey, nodeId] = urlMatch;
     return {
       fileKey,
-      nodeId: nodeId.replace('-', ':'),
+      nodeId: nodeId.replace("-", ":"),
     };
   }
-  throw new Error('Invalid Figma URL format');
+  throw new Error("Invalid Figma URL format");
 };
 ```
 
@@ -103,7 +101,7 @@ await mcp__figma__get_variable_defs({ fileKey, nodeId });
 ```typescript
 // ✅ CORRECT: 既存マッピングを確認して再利用
 const mapping = await mcp__figma__get_code_connect_map({ fileKey, nodeId });
-if (mapping['1:2']) {
+if (mapping["1:2"]) {
   // 既存: src/shared/components/ui/Button.tsx
   // → 新規コード生成せず、既存コンポーネント使用を推奨
 }
@@ -127,8 +125,8 @@ await mcp__figma__get_design_context({
   nodeId,
   disableCodeConnect: false, // 既存コンポーネント活用
   forceCode: false, // メタデータのみで十分ならそれを返す
-  clientLanguages: 'typescript',
-  clientFrameworks: 'react,nextjs',
+  clientLanguages: "typescript",
+  clientFrameworks: "react,nextjs",
 });
 
 // ❌ WRONG: 常に forceCode: true（コンテキスト浪費）
