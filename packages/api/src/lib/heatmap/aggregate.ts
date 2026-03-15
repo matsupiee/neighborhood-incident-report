@@ -1,8 +1,5 @@
 import prisma from "@neighborhood-incident-report/db";
 
-// 最低6時間前に公開されたデータのみ集計
-const HEATMAP_DELAY_MS = 6 * 60 * 60 * 1000;
-
 export type HeatmapFilter = {
   categoryId?: string;
   since?: number; // UNIX タイムスタンプ ms
@@ -15,10 +12,9 @@ export type HeatmapCell = {
 
 /**
  * ヒートマップ集計を実行する。
- * 6時間遅延保証。カテゴリ・期間フィルター対応。
+ * カテゴリ・期間フィルター対応。
  */
 export async function aggregateHeatmap(filter: HeatmapFilter): Promise<HeatmapCell[]> {
-  const cutoff = new Date(Date.now() - HEATMAP_DELAY_MS);
   const sinceDate = filter.since ? new Date(filter.since) : undefined;
 
   if (filter.categoryId) {
@@ -27,7 +23,7 @@ export async function aggregateHeatmap(filter: HeatmapFilter): Promise<HeatmapCe
       where: {
         status: "PUBLISHED",
         publishedAt: {
-          lte: cutoff,
+          not: null,
           ...(sinceDate && { gte: sinceDate }),
         },
         incidentCategoryPosts: {
@@ -42,7 +38,10 @@ export async function aggregateHeatmap(filter: HeatmapFilter): Promise<HeatmapCe
       counts.set(post.meshCode, (counts.get(post.meshCode) ?? 0) + 1);
     }
 
-    return Array.from(counts.entries()).map(([meshCode, count]) => ({ meshCode, count }));
+    return Array.from(counts.entries()).map(([meshCode, count]) => ({
+      meshCode,
+      count,
+    }));
   }
 
   // カテゴリフィルターなし: groupBy で効率的に集計
@@ -51,7 +50,7 @@ export async function aggregateHeatmap(filter: HeatmapFilter): Promise<HeatmapCe
     where: {
       status: "PUBLISHED",
       publishedAt: {
-        lte: cutoff,
+        not: null,
         ...(sinceDate && { gte: sinceDate }),
       },
     },

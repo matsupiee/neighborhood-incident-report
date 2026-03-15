@@ -13,7 +13,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import MapView, { Circle, PROVIDER_DEFAULT, Region } from "react-native-maps";
+import MapView, { Callout, Marker, PROVIDER_DEFAULT, Region } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
@@ -24,6 +24,7 @@ import {
 } from "@/components/map-filters";
 import { ReportSheet } from "@/components/report-sheet";
 import { orpc } from "@/utils/orpc";
+import { reportingStore } from "@/utils/reporting-store";
 
 type LocationData = {
   latitude: number;
@@ -34,9 +35,6 @@ const TOKYO_COORDINATES: LocationData = {
   latitude: 35.6762,
   longitude: 139.6503,
 };
-
-// 3次メッシュ（約1km×1km）の半径（メートル）
-const MESH_RADIUS_METERS = 600;
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
@@ -63,8 +61,7 @@ export default function MapScreen() {
   const shadowOpacity = useRef(new Animated.Value(0.25)).current;
 
   // sinceをfilters.periodMsから計算（リクエスト時に現在時刻基準で計算）
-  const since =
-    filters.periodMs !== undefined ? Date.now() - filters.periodMs : undefined;
+  const since = filters.periodMs !== undefined ? Date.now() - filters.periodMs : undefined;
 
   const { data: heatmapData } = useQuery({
     ...orpc.incident.getHeatmap.queryOptions({
@@ -73,7 +70,7 @@ export default function MapScreen() {
         since,
       },
     }),
-    staleTime: 6 * 60 * 60 * 1000,
+    staleTime: 60 * 1000,
   });
 
   useEffect(() => {
@@ -111,7 +108,7 @@ export default function MapScreen() {
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         },
-        600
+        600,
       );
     }
   };
@@ -125,7 +122,7 @@ export default function MapScreen() {
           latitudeDelta: 0.02,
           longitudeDelta: 0.02,
         },
-        400
+        400,
       );
     }
   };
@@ -140,7 +137,7 @@ export default function MapScreen() {
 
     try {
       const gsiUrl = `https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(
-        query
+        query,
       )}`;
       const res = await fetch(gsiUrl);
       const gsiResults = res.ok ? await res.json() : [];
@@ -156,7 +153,7 @@ export default function MapScreen() {
           latitudeDelta: 0.02,
           longitudeDelta: 0.02,
         },
-        500
+        500,
       );
     } catch {
       setSearchError("検索中にエラーが発生しました");
@@ -181,6 +178,11 @@ export default function MapScreen() {
       setIsReporting(true);
     });
   };
+
+  useEffect(() => {
+    reportingStore.register(handleFabPress);
+    return () => reportingStore.unregister();
+  });
 
   const handleReportSuccess = () => {
     setIsReporting(false);
@@ -279,24 +281,15 @@ export default function MapScreen() {
   }
 
   const center = location ?? TOKYO_COORDINATES;
-  const maxCount =
-    heatmapData?.reduce((max, cell) => Math.max(max, cell.count), 1) ?? 1;
 
   // アクティブなフィルターラベルを生成
-  const activePeriodLabel = PERIOD_OPTIONS.find(
-    (o) => o.value === filters.periodMs
-  )?.label;
+  const activePeriodLabel = PERIOD_OPTIONS.find((o) => o.value === filters.periodMs)?.label;
   const hasNonDefaultFilters =
-    filters.categoryId !== null ||
-    filters.periodMs !== DEFAULT_FILTERS.periodMs;
+    filters.categoryId !== null || filters.periodMs !== DEFAULT_FILTERS.periodMs;
 
   return (
     <View className="flex-1">
-      <StatusBar
-        barStyle="dark-content"
-        translucent
-        backgroundColor="transparent"
-      />
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
 
       <MapView
         ref={mapRef}
@@ -316,16 +309,45 @@ export default function MapScreen() {
       >
         {heatmapData?.map((cell) => {
           const { lat, lng } = meshCodeToCenter(cell.meshCode);
-          const opacity = 0.15 + (cell.count / maxCount) * 0.55;
           return (
-            <Circle
+            <Marker
               key={cell.meshCode}
-              center={{ latitude: lat, longitude: lng }}
-              radius={MESH_RADIUS_METERS}
-              fillColor={`rgba(234, 67, 53, ${opacity})`}
-              strokeColor="rgba(234, 67, 53, 0.3)"
-              strokeWidth={1}
-            />
+              coordinate={{ latitude: lat, longitude: lng }}
+              tracksViewChanges={false}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <ClusterPin count={cell.count} />
+              <Callout tooltip>
+                <View
+                  style={{
+                    backgroundColor: "#fff",
+                    borderRadius: 12,
+                    paddingHorizontal: 14,
+                    paddingVertical: 10,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 6,
+                    elevation: 6,
+                    minWidth: 140,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontWeight: "700",
+                      color: "#111827",
+                    }}
+                  >
+                    {cell.count}件の報告
+                  </Text>
+                  <Text style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+                    このエリアでの発生数
+                  </Text>
+                </View>
+              </Callout>
+            </Marker>
           );
         })}
       </MapView>
@@ -393,10 +415,7 @@ export default function MapScreen() {
 
       {/* Search bar + filter chips — hidden in reporting mode */}
       {!isReporting && (
-        <View
-          style={{ paddingTop: insets.top + 8 }}
-          className="absolute left-0 right-0 px-4"
-        >
+        <View style={{ paddingTop: insets.top + 8 }} className="absolute left-0 right-0 px-4">
           {/* 検索バー（フィルターボタン統合） */}
           <View className="flex-row items-center bg-white rounded-2xl shadow-lg px-4 h-12 mb-2">
             <Ionicons name="search" size={18} color="#9aa0a6" />
@@ -491,13 +510,12 @@ export default function MapScreen() {
                   onRemove={() => removeFilter("categoryId")}
                 />
               )}
-              {filters.periodMs !== DEFAULT_FILTERS.periodMs &&
-                activePeriodLabel && (
-                  <ActiveFilterChip
-                    label={activePeriodLabel}
-                    onRemove={() => removeFilter("periodMs")}
-                  />
-                )}
+              {filters.periodMs !== DEFAULT_FILTERS.periodMs && activePeriodLabel && (
+                <ActiveFilterChip
+                  label={activePeriodLabel}
+                  onRemove={() => removeFilter("periodMs")}
+                />
+              )}
             </View>
           )}
         </View>
@@ -525,11 +543,7 @@ export default function MapScreen() {
             elevation: 6,
           }}
         >
-          <Ionicons
-            name="location"
-            size={16}
-            color={isPanning ? "#9aa0a6" : "#1a73e8"}
-          />
+          <Ionicons name="location" size={16} color={isPanning ? "#9aa0a6" : "#1a73e8"} />
           <Text
             style={{
               flex: 1,
@@ -544,7 +558,7 @@ export default function MapScreen() {
 
       {/* 現在地ボタン */}
       {!isReporting && (
-        <View className="absolute right-4" style={{ bottom: 100 }}>
+        <View className="absolute right-4" style={{ bottom: 32 }}>
           <Pressable
             onPress={handleMyLocation}
             className="w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center"
@@ -552,27 +566,6 @@ export default function MapScreen() {
             <MaterialIcons name="my-location" size={22} color="#1a73e8" />
           </Pressable>
         </View>
-      )}
-
-      {/* FAB - 報告する (hidden while reporting) */}
-      {!isReporting && (
-        <Animated.View
-          style={{
-            position: "absolute",
-            right: 16,
-            bottom: 24,
-            transform: [{ scale: fabScale }],
-          }}
-        >
-          <Pressable
-            onPress={handleFabPress}
-            className="h-14 rounded-2xl items-center justify-center shadow-xl flex-row px-5"
-            style={{ backgroundColor: "#1a73e8", gap: 6 }}
-          >
-            <Ionicons name="add" size={24} color="#ffffff" />
-            <Text className="text-white font-semibold text-sm">報告する</Text>
-          </Pressable>
-        </Animated.View>
       )}
 
       {/* フィルターボトムシート */}
@@ -629,9 +622,7 @@ export default function MapScreen() {
               backgroundColor: "#f3f4f6",
             }}
           >
-            <Text style={{ fontSize: 15, fontWeight: "500", color: "#6b7280" }}>
-              キャンセル
-            </Text>
+            <Text style={{ fontSize: 15, fontWeight: "500", color: "#6b7280" }}>キャンセル</Text>
           </Pressable>
         </View>
       )}
@@ -647,13 +638,48 @@ export default function MapScreen() {
   );
 }
 
-function ActiveFilterChip({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function clusterColor(count: number): string {
+  if (count >= 10) return "#dc2626"; // 10件以上: 濃い赤
+  if (count >= 5) return "#ef4444"; // 5〜9件: 赤
+  if (count >= 2) return "#f97316"; // 2〜4件: オレンジ
+  return "#f59e0b"; // 1件: 黄オレンジ
+}
+
+function ClusterPin({ count }: { count: number }) {
+  const size = count >= 10 ? 44 : count >= 5 ? 40 : 34;
+  const color = clusterColor(count);
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: color,
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 2.5,
+        borderColor: "#fff",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 6,
+      }}
+    >
+      <Text
+        style={{
+          color: "#fff",
+          fontWeight: "700",
+          fontSize: count >= 100 ? 10 : count >= 10 ? 12 : 14,
+        }}
+      >
+        {count}
+      </Text>
+    </View>
+  );
+}
+
+function ActiveFilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <Pressable
       onPress={onRemove}
@@ -667,9 +693,7 @@ function ActiveFilterChip({
         backgroundColor: "#e8f0fe",
       }}
     >
-      <Text style={{ fontSize: 12, fontWeight: "500", color: "#1a73e8" }}>
-        {label}
-      </Text>
+      <Text style={{ fontSize: 12, fontWeight: "500", color: "#1a73e8" }}>{label}</Text>
       <Ionicons name="close" size={12} color="#1a73e8" />
     </Pressable>
   );

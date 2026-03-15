@@ -7,6 +7,7 @@ import {
   Animated,
   Dimensions,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   View,
@@ -17,7 +18,13 @@ import z from "zod";
 
 import { orpc, queryClient } from "@/utils/orpc";
 
-type TimeRange = "MIDNIGHT" | "MORNING" | "DAYTIME" | "EVENING" | "NIGHT_EARLY" | "NIGHT_LATE";
+type TimeRange =
+  | "MIDNIGHT"
+  | "MORNING"
+  | "DAYTIME"
+  | "EVENING"
+  | "NIGHT_EARLY"
+  | "NIGHT_LATE";
 
 type TimeRangeOption = {
   value: TimeRange;
@@ -56,9 +63,22 @@ const TIME_RANGE_OPTIONS: TimeRangeOption[] = [
 ];
 
 const postFormSchema = z.object({
-  timeRange: z.enum(["MIDNIGHT", "MORNING", "DAYTIME", "EVENING", "NIGHT_EARLY", "NIGHT_LATE"]),
-  categoryIds: z.array(z.string()).min(1, "最低1つのカテゴリを選択してください").max(5),
-  description: z.string().min(1, "説明は必須です").max(200, "説明は200文字以内です"),
+  timeRange: z.enum([
+    "MIDNIGHT",
+    "MORNING",
+    "DAYTIME",
+    "EVENING",
+    "NIGHT_EARLY",
+    "NIGHT_LATE",
+  ]),
+  categoryIds: z
+    .array(z.string())
+    .min(1, "最低1つのカテゴリを選択してください")
+    .max(5),
+  description: z
+    .string()
+    .min(1, "説明は必須です")
+    .max(200, "説明は200文字以内です"),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
 });
@@ -75,9 +95,15 @@ const SHEET_HEIGHT = SCREEN_HEIGHT * 0.55;
 // 閉じる時は bottom safe area も含めた高さ分だけ押し出す
 const SHEET_TRANSLATE_CLOSED = SCREEN_HEIGHT;
 
-export function ReportSheet({ isVisible, coords, onSuccess, onCancel }: ReportSheetProps) {
+export function ReportSheet({
+  isVisible,
+  coords,
+  onSuccess,
+  onCancel,
+}: ReportSheetProps) {
   const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(SHEET_TRANSLATE_CLOSED)).current;
+  const scrollRef = useRef<ScrollView>(null);
 
   const [timeRange, setTimeRange] = useState<TimeRange>("DAYTIME");
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
@@ -112,7 +138,9 @@ export function ReportSheet({ isVisible, coords, onSuccess, onCancel }: ReportSh
       useNativeDriver: true,
     }).start();
 
-    if (!isVisible) {
+    if (isVisible) {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    } else {
       resetForm();
     }
   }, [isVisible]);
@@ -134,13 +162,19 @@ export function ReportSheet({ isVisible, coords, onSuccess, onCancel }: ReportSh
       longitude: coords.longitude,
     });
     if (!parsed.success) {
-      Alert.alert("入力エラー", parsed.error.issues.map((e) => e.message).join("\n"));
+      Alert.alert(
+        "入力エラー",
+        parsed.error.issues.map((e) => e.message).join("\n"),
+      );
       return;
     }
     createMutation.mutate(parsed.data);
   };
 
-  const canSubmit = !createMutation.isPending && description.length > 0 && categoryIds.length > 0;
+  const canSubmit =
+    !createMutation.isPending &&
+    description.length > 0 &&
+    categoryIds.length > 0;
 
   return (
     <Animated.View
@@ -182,7 +216,9 @@ export function ReportSheet({ isVisible, coords, onSuccess, onCancel }: ReportSh
           paddingVertical: 8,
         }}
       >
-        <Text style={{ flex: 1, fontSize: 18, fontWeight: "700", color: "#111827" }}>
+        <Text
+          style={{ flex: 1, fontSize: 18, fontWeight: "700", color: "#111827" }}
+        >
           インシデントを報告
         </Text>
         <Pressable
@@ -201,12 +237,15 @@ export function ReportSheet({ isVisible, coords, onSuccess, onCancel }: ReportSh
       </View>
 
       <KeyboardAwareScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
         bottomOffset={80}
       >
         {/* Time range */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
+        <View
+          style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}
+        >
           <Text
             style={{
               fontSize: 11,
@@ -242,11 +281,17 @@ export function ReportSheet({ isVisible, coords, onSuccess, onCancel }: ReportSh
                       borderRadius: 16,
                       alignItems: "center",
                       justifyContent: "center",
-                      backgroundColor: isActive ? "rgba(255,255,255,0.2)" : `${opt.color}22`,
+                      backgroundColor: isActive
+                        ? "rgba(255,255,255,0.2)"
+                        : `${opt.color}22`,
                       marginBottom: 4,
                     }}
                   >
-                    <Ionicons name={opt.icon} size={18} color={isActive ? "#ffffff" : opt.color} />
+                    <Ionicons
+                      name={opt.icon}
+                      size={18}
+                      color={isActive ? "#ffffff" : opt.color}
+                    />
                   </View>
                   <Text
                     style={{
@@ -275,7 +320,9 @@ export function ReportSheet({ isVisible, coords, onSuccess, onCancel }: ReportSh
         />
 
         {/* Categories */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16 }}>
+        <View
+          style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16 }}
+        >
           <View
             style={{
               flexDirection: "row",
@@ -296,7 +343,9 @@ export function ReportSheet({ isVisible, coords, onSuccess, onCancel }: ReportSh
               カテゴリ
             </Text>
             {categoryIds.length > 0 && (
-              <Text style={{ fontSize: 11, color: "#9ca3af" }}>{categoryIds.length}/5</Text>
+              <Text style={{ fontSize: 11, color: "#9ca3af" }}>
+                {categoryIds.length}/5
+              </Text>
             )}
           </View>
           {categoriesQuery.isLoading ? (
@@ -319,7 +368,9 @@ export function ReportSheet({ isVisible, coords, onSuccess, onCancel }: ReportSh
                       backgroundColor: isActive ? "#1a73e8" : "#f3f4f6",
                     }}
                   >
-                    {isActive && <Ionicons name="checkmark" size={12} color="#ffffff" />}
+                    {isActive && (
+                      <Ionicons name="checkmark" size={12} color="#ffffff" />
+                    )}
                     <Text
                       style={{
                         fontSize: 13,

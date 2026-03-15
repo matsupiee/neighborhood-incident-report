@@ -4,7 +4,7 @@ import { ORPCError } from "@orpc/server";
 import { aggregateHeatmap } from "../../lib/heatmap/aggregate";
 import { toMeshCode } from "../../lib/mesh/convert";
 import { filterText } from "../../lib/moderation/text-filter";
-import { calculateTrustScore, isHighTrust } from "../../lib/trust/scoring";
+import { calculateTrustScore } from "../../lib/trust/scoring";
 import { checkPostRateLimit } from "../../middleware/rate-limit";
 import type {
   IncidentCreateInput,
@@ -32,8 +32,8 @@ export async function createIncident(input: IncidentCreateInput, userId: string)
   // 4. トラストスコアを計算
   const trustScore = await calculateTrustScore(userId);
 
-  // 5. trustScore >= 80 の場合は6時間後に自動公開予定、< 80 ならモデレーター確認待ち
-  const publishedAt = isHighTrust(trustScore) ? new Date(Date.now() + 6 * 60 * 60 * 1000) : null;
+  // 5. Post を即時公開で作成
+  const publishedAt = new Date();
 
   // 6. Post を作成
   return await prisma.post.create({
@@ -42,7 +42,7 @@ export async function createIncident(input: IncidentCreateInput, userId: string)
       description: filterResult.filtered,
       timeRange: input.timeRange,
       imageUrl: input.imageUrl,
-      status: "PENDING",
+      status: "PUBLISHED",
       publishedAt,
       userId,
       incidentCategoryPosts: {
