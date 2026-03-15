@@ -39,6 +39,11 @@ export default function ProfileScreen() {
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
   const isConnected = healthCheck?.data === "OK";
 
+  const { data: myStats } = useQuery({
+    ...orpc.incident.getMyStats.queryOptions(),
+    enabled: !!session?.user,
+  });
+
   const [locationStatus, setLocationStatus] = useState<Location.PermissionStatus | null>(null);
 
   useEffect(() => {
@@ -111,8 +116,8 @@ export default function ProfileScreen() {
         {/* Stats Row */}
         <View className="border-t border-gray-100 flex-row">
           {[
-            { label: "投稿", value: "0" },
-            { label: "解決", value: "0" },
+            { label: "投稿", value: String(myStats?.postCount ?? 0) },
+            { label: "公開", value: String(myStats?.resolvedCount ?? 0) },
             { label: "評価", value: "—" },
           ].map((stat, i) => (
             <View

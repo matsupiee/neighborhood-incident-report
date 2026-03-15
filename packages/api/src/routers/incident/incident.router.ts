@@ -8,6 +8,7 @@ import {
 import {
   createIncident,
   getHeatmap,
+  getMyStats,
   listCategories,
   listIncidents,
   reportAbuse,
@@ -35,4 +36,8 @@ export const incidentRouter = {
     .handler(async ({ input, context }) => {
       return await reportAbuse(input, context.session.user.id);
     }),
+
+  getMyStats: protectedProcedure.handler(async ({ context }) => {
+    return await getMyStats(context.session.user.id);
+  }),
 };

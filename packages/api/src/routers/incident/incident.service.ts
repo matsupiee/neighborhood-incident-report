@@ -115,6 +115,15 @@ export async function listCategories() {
   });
 }
 
+export async function getMyStats(userId: string) {
+  const [postCount, resolvedCount] = await Promise.all([
+    prisma.post.count({ where: { userId } }),
+    prisma.post.count({ where: { userId, status: "PUBLISHED" } }),
+  ]);
+
+  return { postCount, resolvedCount };
+}
+
 export async function reportAbuse(input: IncidentReportAbuseInput, userId: string) {
   // 投稿の存在確認
   const post = await prisma.post.findUnique({
